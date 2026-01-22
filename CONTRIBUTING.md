@@ -1,5 +1,7 @@
 # Contributing Guide
 
+**[Live Demo](https://convex-firecrawl-scrape.vercel.app/)** - See the component in action
+
 ## Running Locally
 
 ```sh

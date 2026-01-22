@@ -2,6 +2,8 @@
 
 Demo application for the Convex Firecrawl Scrape component.
 
+Live demo: https://convex-firecrawl-scrape.vercel.app/
+
 ## Quick Start
 
 From the repository root:

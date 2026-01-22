@@ -25,7 +25,7 @@ const status = useQuery(api.firecrawl.getStatus, { id: jobId });
 - **Built-in SSRF protection** blocks private IPs and localhost
 - **Secure by default** with required auth wrapper
 
-**[Live Demo](https://firecrawl-demo.convex.site)** | [Example Code](./example)
+**[Live Demo](https://convex-firecrawl-scrape.vercel.app/)** | [Example Code](./example)
 
 Play with the example:
 

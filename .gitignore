@@ -1,0 +1,35 @@
+.DS_Store
+.idea
+*.local
+*.log
+/.vscode/
+/docs/.vitepress/cache
+dist
+dist-ssr
+explorations
+node_modules
+.eslintcache
+
+# Tool reports (jscpd, etc.)
+reports/
+
+# npm pack output
+*.tgz
+*.tsbuildinfo
+
+# IDE and editor configs
+.cursor/
+
+# Factory.ai tooling (internal - not for distribution)
+.factory/
+AGENTS.md
+CLAUDE.md
+
+# Flow-Next task management (internal)
+.flow/
+
+# Ralph autonomous harness (internal)
+ralph/
+
+# Internal dev documentation (style guides, templates - not for distribution)
+dev-docs/

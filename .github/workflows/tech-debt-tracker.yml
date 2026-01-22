@@ -1,0 +1,126 @@
+name: Technical Debt Tracker
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: ["**"]
+  schedule:
+    # Run weekly on Monday at 9am UTC to track debt over time
+    - cron: "0 9 * * 1"
+  workflow_dispatch:
+
+jobs:
+  scan-tech-debt:
+    name: Scan TODO/FIXME markers
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6
+
+      - name: Scan for technical debt markers
+        id: debt-scan
+        run: |
+          echo "# Technical Debt Report" > tech-debt-report.md
+          echo "" >> tech-debt-report.md
+          echo "Generated on: $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> tech-debt-report.md
+          echo "" >> tech-debt-report.md
+
+          # Define patterns to search for
+          PATTERNS="TODO|FIXME|HACK|XXX|BUG|OPTIMIZE|REFACTOR"
+
+          # Count by category
+          echo "## Summary" >> tech-debt-report.md
+          echo "" >> tech-debt-report.md
+          echo "| Marker | Count |" >> tech-debt-report.md
+          echo "|--------|-------|" >> tech-debt-report.md
+
+          for marker in TODO FIXME HACK XXX BUG OPTIMIZE REFACTOR; do
+            count=$(grep -rn --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" --include="*.py" --include="*.md" "$marker:" . 2>/dev/null | grep -v node_modules | grep -v ".git" | grep -v "tech-debt" | wc -l || echo "0")
+            echo "| $marker | $count |" >> tech-debt-report.md
+          done
+
+          echo "" >> tech-debt-report.md
+
+          # Get total count
+          TOTAL=$(grep -rn --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" --include="*.py" --include="*.md" -E "($PATTERNS):" . 2>/dev/null | grep -v node_modules | grep -v ".git" | grep -v "tech-debt" | wc -l || echo "0")
+          echo "**Total debt markers: $TOTAL**" >> tech-debt-report.md
+          echo "" >> tech-debt-report.md
+
+          # List all items with context
+          echo "## Detailed List" >> tech-debt-report.md
+          echo "" >> tech-debt-report.md
+
+          if [ "$TOTAL" -gt 0 ]; then
+            echo '```' >> tech-debt-report.md
+            grep -rn --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" --include="*.py" --include="*.md" -E "($PATTERNS):" . 2>/dev/null | grep -v node_modules | grep -v ".git" | grep -v "tech-debt" >> tech-debt-report.md || true
+            echo '```' >> tech-debt-report.md
+          else
+            echo "_No technical debt markers found._" >> tech-debt-report.md
+          fi
+
+          # Output for workflow
+          echo "total=$TOTAL" >> $GITHUB_OUTPUT
+
+          # Display report
+          cat tech-debt-report.md
+
+      - name: Upload tech debt report
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: tech-debt-report
+          path: tech-debt-report.md
+          retention-days: 90
+
+      - name: Comment on PR with debt summary
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('tech-debt-report.md', 'utf8');
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.find(comment =>
+              comment.user.type === 'Bot' &&
+              comment.body.includes('Technical Debt Report')
+            );
+
+            const body = `## 📋 Technical Debt Report\n\n${report}`;
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: body
+              });
+            }
+
+      - name: Check debt threshold
+        run: |
+          TOTAL=${{ steps.debt-scan.outputs.total }}
+          THRESHOLD=100
+
+          echo "Technical debt markers found: $TOTAL"
+          echo "Threshold: $THRESHOLD"
+
+          if [ "$TOTAL" -gt "$THRESHOLD" ]; then
+            echo "::warning::Technical debt ($TOTAL markers) exceeds threshold ($THRESHOLD). Consider addressing some items."
+          fi

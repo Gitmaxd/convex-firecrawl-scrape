@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.2
+
+- fix: switch npm badge to shields.io for better reliability
+
 ## 0.1.1
 
 - docs: add live demo links to documentation

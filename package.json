@@ -89,6 +89,7 @@
     "@types/node": "^24.10.4",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
+    "@vercel/analytics": "^1.6.1",
     "@vitejs/plugin-react": "^5.1.1",
     "chokidar-cli": "3.0.0",
     "convex": "1.31.0",

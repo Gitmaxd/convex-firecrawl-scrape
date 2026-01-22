@@ -1,6 +1,7 @@
 import "./App.css";
 import { useState, FormEvent } from "react";
 import { useMutation, useQuery } from "convex/react";
+import { Analytics } from "@vercel/analytics/react";
 import { api } from "../convex/_generated/api";
 import { ScrapeResultsPanel } from "./components/ScrapeResultsPanel";
 import { Footer } from "./components/Footer";
@@ -418,6 +419,8 @@ function App() {
           </div>
         </div>
       )}
+
+      <Analytics />
     </div>
   );
 }

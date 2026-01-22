@@ -1,10 +1,10 @@
 {
   "name": "convex-firecrawl-scrape",
   "description": "A Convex component for scraping web pages using the Firecrawl API with durable caching and reactive queries.",
-  "repository": "github:gitmaxd/convex-firecrawl-scrape",
-  "homepage": "https://github.com/gitmaxd/convex-firecrawl-scrape#readme",
+  "repository": "github:Gitmaxd/convex-firecrawl-scrape",
+  "homepage": "https://github.com/Gitmaxd/convex-firecrawl-scrape#readme",
   "bugs": {
-    "url": "https://github.com/gitmaxd/convex-firecrawl-scrape/issues"
+    "url": "https://github.com/Gitmaxd/convex-firecrawl-scrape/issues"
   },
   "version": "0.1.0",
   "license": "Apache-2.0",

@@ -1,6 +1,6 @@
 # Convex Firecrawl Scrape Component
 
-[![npm version](https://badge.fury.io/js/convex-firecrawl-scrape.svg)](https://badge.fury.io/js/convex-firecrawl-scrape)
+[![npm version](https://img.shields.io/npm/v/convex-firecrawl-scrape.svg)](https://www.npmjs.com/package/convex-firecrawl-scrape)
 
 <p align="center">
   <img src="./convex-firecrawl-component.webp" alt="Convex Firecrawl Scrape Component" width="100%" />
@@ -25,7 +25,8 @@ const status = useQuery(api.firecrawl.getStatus, { id: jobId });
 - **Built-in SSRF protection** blocks private IPs and localhost
 - **Secure by default** with required auth wrapper
 
-**[Live Demo](https://convex-firecrawl-scrape.vercel.app/)** | [Example Code](./example)
+**[Live Demo](https://convex-firecrawl-scrape.vercel.app/)** |
+[Example Code](./example)
 
 Play with the example:
 

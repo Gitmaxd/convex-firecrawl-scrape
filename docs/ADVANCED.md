@@ -189,7 +189,7 @@ type ScrapeFormat =
 interface StatusResult {
   status: "pending" | "scraping" | "completed" | "failed";
   error?: string;
-  errorCode?: number;
+  errorCode?: number | string;
 }
 ```
 

@@ -51,7 +51,7 @@ describe("startScrape mutation", () => {
       t.mutation(api.lib.startScrape, {
         url: "http://localhost:3000/test",
         apiKey: "test-key",
-      })
+      }),
     ).rejects.toThrow(/Private\/local IP/);
 
     // Test private IP rejection
@@ -59,7 +59,7 @@ describe("startScrape mutation", () => {
       t.mutation(api.lib.startScrape, {
         url: "http://192.168.1.1/test",
         apiKey: "test-key",
-      })
+      }),
     ).rejects.toThrow(/Private\/local IP/);
 
     // Test .local domain rejection
@@ -67,7 +67,7 @@ describe("startScrape mutation", () => {
       t.mutation(api.lib.startScrape, {
         url: "http://myapp.local/test",
         apiKey: "test-key",
-      })
+      }),
     ).rejects.toThrow(/Blocked hostname/);
 
     // Test URL too long
@@ -76,7 +76,7 @@ describe("startScrape mutation", () => {
       t.mutation(api.lib.startScrape, {
         url: longUrl,
         apiKey: "test-key",
-      })
+      }),
     ).rejects.toThrow(/exceeds maximum length/);
 
     // Test invalid scheme
@@ -84,7 +84,7 @@ describe("startScrape mutation", () => {
       t.mutation(api.lib.startScrape, {
         url: "ftp://example.com/file.txt",
         apiKey: "test-key",
-      })
+      }),
     ).rejects.toThrow(/Invalid URL scheme/);
   });
 
@@ -138,7 +138,7 @@ describe("startScrape mutation", () => {
       t.mutation(api.lib.startScrape, {
         url: "https://example.com/page",
         apiKey: "test-key",
-      })
+      }),
     ).rejects.toThrow(/already in progress/);
   });
 
@@ -340,6 +340,23 @@ describe("internal mutations", () => {
     expect(scrape?.status).toBe("failed");
     expect(scrape?.error).toBe("Rate limit exceeded");
     expect(scrape?.errorCode).toBe(429);
+  });
+
+  test("failScrape stores string errorCode from Firecrawl API", async () => {
+    const t = initConvexTest();
+    const { jobId } = await t.mutation(api.lib.startScrape, {
+      url: "https://example.com/page",
+      apiKey: "test-key",
+    });
+    await t.mutation(internal.lib.failScrape, {
+      jobId,
+      error: "Invalid URL",
+      errorCode: "BAD_REQUEST",
+    });
+    const scrape = await t.query(api.lib.get, { id: jobId });
+    expect(scrape?.status).toBe("failed");
+    expect(scrape?.error).toBe("Invalid URL");
+    expect(scrape?.errorCode).toBe("BAD_REQUEST");
   });
 });
 
@@ -896,7 +913,7 @@ describe("scrape action - various formats", () => {
 
     const content = await t.query(api.lib.getContent, { id: jobId });
     expect(content?.screenshotUrl).toBe(
-      "https://cdn.firecrawl.dev/screenshot-abc123.png"
+      "https://cdn.firecrawl.dev/screenshot-abc123.png",
     );
   });
 
@@ -916,18 +933,14 @@ describe("scrape action - various formats", () => {
       ttlMs: 30 * 24 * 60 * 60 * 1000,
       markdown: "# Hello World\n\nThis is content.",
       html: "<h1>Hello World</h1><p>This is content.</p>",
-      rawHtml:
-        "<!DOCTYPE html><html><body><h1>Hello World</h1></body></html>",
+      rawHtml: "<!DOCTYPE html><html><body><h1>Hello World</h1></body></html>",
       summary: "A simple greeting page",
       links: [
         "https://example.com/link1",
         "https://example.com/link2",
         "https://example.com/link3",
       ],
-      images: [
-        "https://example.com/img1.png",
-        "https://example.com/img2.jpg",
-      ],
+      images: ["https://example.com/img1.png", "https://example.com/img2.jpg"],
       metadata: {
         title: "Hello World",
         description: "A test page",
@@ -1151,6 +1164,23 @@ describe("error handling", () => {
     expect(status?.errorCode).toBe(500);
   });
 
+  test("failScrape stores string errorCode and surfaces via getStatus", async () => {
+    const t = initConvexTest();
+    const { jobId } = await t.mutation(api.lib.startScrape, {
+      url: "https://example.com/page",
+      apiKey: "test-key",
+    });
+    await t.mutation(internal.lib.failScrape, {
+      jobId,
+      error: "Request timed out",
+      errorCode: "TIMEOUT",
+    });
+    const status = await t.query(api.lib.getStatus, { id: jobId });
+    expect(status?.status).toBe("failed");
+    expect(status?.error).toContain("timed out");
+    expect(status?.errorCode).toBe("TIMEOUT");
+  });
+
   test("getContent includes error details for failed scrape", async () => {
     const t = initConvexTest();
 
@@ -1193,7 +1223,7 @@ describe("request deduplication", () => {
       t.mutation(api.lib.startScrape, {
         url: "https://example.com/page",
         apiKey: "test-key",
-      })
+      }),
     ).rejects.toThrow(/already in progress/);
   });
 
@@ -1213,7 +1243,7 @@ describe("request deduplication", () => {
       t.mutation(api.lib.startScrape, {
         url: "https://example.com/page",
         apiKey: "test-key",
-      })
+      }),
     ).rejects.toThrow(/already in progress/);
   });
 
@@ -1253,7 +1283,7 @@ describe("request deduplication", () => {
       t.mutation(api.lib.startScrape, {
         url: "https://example.com/page",
         apiKey: "test-key",
-      })
+      }),
     ).rejects.toThrow(/already in progress/);
   });
 });

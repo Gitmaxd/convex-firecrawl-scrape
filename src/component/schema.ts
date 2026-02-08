@@ -19,7 +19,7 @@ export default defineSchema({
       v.literal("pending"),
       v.literal("scraping"),
       v.literal("completed"),
-      v.literal("failed")
+      v.literal("failed"),
     ),
 
     // Requested formats - used for cache matching (superset check: cached result
@@ -67,12 +67,12 @@ export default defineSchema({
         // Response headers
         contentType: v.optional(v.string()),
         cacheControl: v.optional(v.string()),
-      })
+      }),
     ),
 
     // Error tracking
     error: v.optional(v.string()),
-    errorCode: v.optional(v.number()),
+    errorCode: v.optional(v.union(v.number(), v.string())),
 
     // Timestamps
     startedAt: v.number(), // When scrape job was created

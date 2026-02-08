@@ -231,7 +231,7 @@ For domain allowlists, rate limiting, and detailed security guidance, see
 const status = await getStatus({ id: jobId });
 if (status?.status === "failed") {
   console.error(status.error, status.errorCode);
-  // errorCode is the HTTP status from Firecrawl (e.g., 402, 403, 429, 500)
+  // errorCode is the HTTP status or error code from Firecrawl (e.g., 402, 429, "BAD_REQUEST")
 }
 ```
 

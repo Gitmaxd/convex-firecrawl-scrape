@@ -91,7 +91,7 @@ interface ScrapeRecord {
   extractionSchema?: unknown;
   metadata?: MetadataType;
   error?: string;
-  errorCode?: number;
+  errorCode?: number | string;
   startedAt: number;
   scrapingAt?: number;
   scrapedAt?: number;
@@ -120,7 +120,7 @@ interface ContentResult {
   screenshotFileUrl?: string | null;
   metadata?: MetadataType;
   error?: string;
-  errorCode?: number;
+  errorCode?: number | string;
   startedAt: number;
   scrapingAt?: number;
   scrapedAt?: number;
@@ -133,7 +133,7 @@ interface ContentResult {
 interface StatusResult {
   status: StatusType;
   error?: string;
-  errorCode?: number;
+  errorCode?: number | string;
   startedAt: number;
   scrapingAt?: number;
   scrapedAt?: number;
@@ -244,7 +244,11 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
         "query",
         "internal",
         { status?: StatusType; limit?: number; cursor?: string },
-        { scrapes: ScrapeRecord[]; nextCursor: string | null; hasMore: boolean },
+        {
+          scrapes: ScrapeRecord[];
+          nextCursor: string | null;
+          hasMore: boolean;
+        },
         Name
       >;
 
@@ -429,7 +433,7 @@ export interface ScrapeResult<T = unknown> {
   metadata?: ScrapeMetadata;
   // Error info
   error?: string;
-  errorCode?: number;
+  errorCode?: number | string;
   // Timestamps
   startedAt: number;
   scrapingAt?: number;
@@ -466,7 +470,7 @@ export interface CachedContent {
 export interface ScrapeStatusInfo {
   status: ScrapeStatus;
   error?: string;
-  errorCode?: number;
+  errorCode?: number | string;
   startedAt: number;
   scrapingAt?: number;
   scrapedAt?: number;
@@ -495,8 +499,6 @@ export interface FirecrawlScrapeOptions {
    */
   maxRequestsPerMinute?: number;
 }
-
-
 
 // ============================================================================
 // FirecrawlScrape Client Class
@@ -570,7 +572,7 @@ export class FirecrawlScrape {
     if (this.requestsThisMinute > this.maxRequestsPerMinute) {
       console.warn(
         `[FirecrawlScrape] Rate limit advisory: ${this.requestsThisMinute} requests this minute ` +
-          `(limit: ${this.maxRequestsPerMinute}). Consider reducing request frequency.`
+          `(limit: ${this.maxRequestsPerMinute}). Consider reducing request frequency.`,
       );
     }
   }
@@ -583,7 +585,7 @@ export class FirecrawlScrape {
     if (!key) {
       throw new Error(
         "Firecrawl API key not found. Set FIRECRAWL_API_KEY environment variable " +
-          "or pass it in the FirecrawlScrape constructor options."
+          "or pass it in the FirecrawlScrape constructor options.",
       );
     }
     return key;
@@ -616,7 +618,7 @@ export class FirecrawlScrape {
   async scrape(
     ctx: GenericMutationCtx<GenericDataModel>,
     url: string,
-    options?: ScrapeOptions
+    options?: ScrapeOptions,
   ): Promise<{ jobId: string }> {
     this.checkRateLimit();
 
@@ -669,9 +671,12 @@ export class FirecrawlScrape {
   async getCached(
     ctx: GenericQueryCtx<GenericDataModel>,
     url: string,
-    formats?: ScrapeFormat[]
+    formats?: ScrapeFormat[],
   ): Promise<CachedContent | null> {
-    const result = await ctx.runQuery(this.component.lib.getCached, { url, formats });
+    const result = await ctx.runQuery(this.component.lib.getCached, {
+      url,
+      formats,
+    });
     if (!result) {
       return null;
     }
@@ -714,7 +719,7 @@ export class FirecrawlScrape {
    */
   async getStatus(
     ctx: GenericQueryCtx<GenericDataModel>,
-    jobId: string
+    jobId: string,
   ): Promise<ScrapeStatusInfo | null> {
     return await ctx.runQuery(this.component.lib.getStatus, { id: jobId });
   }
@@ -749,7 +754,7 @@ export class FirecrawlScrape {
    */
   async getContent<T = unknown>(
     ctx: GenericQueryCtx<GenericDataModel>,
-    jobId: string
+    jobId: string,
   ): Promise<ScrapeResult<T> | null> {
     const result = await ctx.runQuery(this.component.lib.getContent, {
       id: jobId,
@@ -803,7 +808,7 @@ export class FirecrawlScrape {
    */
   async invalidate(
     ctx: GenericMutationCtx<GenericDataModel>,
-    url: string
+    url: string,
   ): Promise<{ success: boolean; invalidatedCount: number }> {
     return await ctx.runMutation(this.component.lib.invalidate, { url });
   }
@@ -860,7 +865,7 @@ export interface ExposeApiOptions {
    */
   auth: (
     ctx: { auth: GenericQueryCtx<GenericDataModel>["auth"] },
-    operation: ExposeApiOperation
+    operation: ExposeApiOperation,
   ) => Promise<string>;
 }
 
@@ -869,7 +874,7 @@ const statusValidator = v.union(
   v.literal("pending"),
   v.literal("scraping"),
   v.literal("completed"),
-  v.literal("failed")
+  v.literal("failed"),
 );
 
 const metadataValidatorExposed = v.object({
@@ -893,13 +898,13 @@ const scrapeFormatValidator = v.union(
   v.literal("links"),
   v.literal("images"),
   v.literal("summary"),
-  v.literal("screenshot")
+  v.literal("screenshot"),
 );
 
 const proxyValidatorExposed = v.union(
   v.literal("basic"),
   v.literal("stealth"),
-  v.literal("auto")
+  v.literal("auto"),
 );
 
 const scrapeOptionsValidatorExposed = v.object({
@@ -1076,12 +1081,12 @@ export function exposeApi(component: ComponentApi, options: ExposeApiOptions) {
           extractionSchema: v.optional(v.any()),
           metadata: v.optional(metadataValidatorExposed),
           error: v.optional(v.string()),
-          errorCode: v.optional(v.number()),
+          errorCode: v.optional(v.union(v.number(), v.string())),
           startedAt: v.number(),
           scrapingAt: v.optional(v.number()),
           scrapedAt: v.optional(v.number()),
           expiresAt: v.number(),
-        })
+        }),
       ),
       handler: async (ctx, args) => {
         await options.auth(ctx, "getCached");
@@ -1099,12 +1104,12 @@ export function exposeApi(component: ComponentApi, options: ExposeApiOptions) {
         v.object({
           status: statusValidator,
           error: v.optional(v.string()),
-          errorCode: v.optional(v.number()),
+          errorCode: v.optional(v.union(v.number(), v.string())),
           startedAt: v.number(),
           scrapingAt: v.optional(v.number()),
           scrapedAt: v.optional(v.number()),
           expiresAt: v.number(),
-        })
+        }),
       ),
       handler: async (ctx, args) => {
         await options.auth(ctx, "getStatus");
@@ -1141,12 +1146,12 @@ export function exposeApi(component: ComponentApi, options: ExposeApiOptions) {
           screenshotFileUrl: v.optional(v.union(v.string(), v.null())),
           metadata: v.optional(metadataValidatorExposed),
           error: v.optional(v.string()),
-          errorCode: v.optional(v.number()),
+          errorCode: v.optional(v.union(v.number(), v.string())),
           startedAt: v.number(),
           scrapingAt: v.optional(v.number()),
           scrapedAt: v.optional(v.number()),
           expiresAt: v.number(),
-        })
+        }),
       ),
       handler: async (ctx, args) => {
         await options.auth(ctx, "getContent");

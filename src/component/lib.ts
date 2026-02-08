@@ -181,7 +181,7 @@ export const getStatus = query({
     v.object({
       status: statusValidator,
       error: v.optional(v.string()),
-      errorCode: v.optional(v.number()),
+      errorCode: v.optional(v.union(v.number(), v.string())),
       startedAt: v.number(),
       scrapingAt: v.optional(v.number()),
       scrapedAt: v.optional(v.number()),
@@ -232,7 +232,7 @@ const contentResultValidator = v.object({
   metadata: v.optional(metadataValidator),
   // Error info
   error: v.optional(v.string()),
-  errorCode: v.optional(v.number()),
+  errorCode: v.optional(v.union(v.number(), v.string())),
   // Timestamps
   startedAt: v.number(),
   scrapingAt: v.optional(v.number()),
@@ -733,7 +733,7 @@ export const failScrape = internalMutation({
   args: {
     jobId: v.id("scrapes"),
     error: v.string(),
-    errorCode: v.optional(v.number()),
+    errorCode: v.optional(v.union(v.number(), v.string())),
   },
   returns: v.null(),
   handler: async (ctx, args) => {

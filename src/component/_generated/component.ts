@@ -39,7 +39,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
           _creationTime: number;
           _id: string;
           error?: string;
-          errorCode?: number;
+          errorCode?: number | string;
           expiresAt: number;
           extractedJson?: any;
           extractedJsonFileId?: string;
@@ -89,7 +89,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
           _creationTime: number;
           _id: string;
           error?: string;
-          errorCode?: number;
+          errorCode?: number | string;
           expiresAt: number;
           extractedJson?: any;
           extractedJsonFileId?: string;
@@ -150,7 +150,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
           _creationTime: number;
           _id: string;
           error?: string;
-          errorCode?: number;
+          errorCode?: number | string;
           expiresAt: number;
           extractedJson?: any;
           extractedJsonFileId?: string;
@@ -198,7 +198,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
         { id: string },
         null | {
           error?: string;
-          errorCode?: number;
+          errorCode?: number | string;
           expiresAt: number;
           extractedJson?: any;
           extractedJsonFileUrl?: string | null;
@@ -244,7 +244,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
         { id: string },
         null | {
           error?: string;
-          errorCode?: number;
+          errorCode?: number | string;
           expiresAt: number;
           scrapedAt?: number;
           scrapingAt?: number;
@@ -275,7 +275,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
             _creationTime: number;
             _id: string;
             error?: string;
-            errorCode?: number;
+            errorCode?: number | string;
             expiresAt: number;
             extractedJson?: any;
             extractedJsonFileId?: string;
@@ -329,7 +329,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
           _creationTime: number;
           _id: string;
           error?: string;
-          errorCode?: number;
+          errorCode?: number | string;
           expiresAt: number;
           extractedJson?: any;
           extractedJsonFileId?: string;
